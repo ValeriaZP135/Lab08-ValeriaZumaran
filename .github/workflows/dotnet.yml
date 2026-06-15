@@ -1,11 +1,9 @@
 name: Build and Deploy .NET Application
 
-
 on:
   push:
     branches:
-      - master # Automáticamente se ejecuta cuando se suben cambios a la rama principal
-
+      - master
 
 jobs:
   build:
@@ -13,28 +11,24 @@ jobs:
     
     steps:
     - name: Check out code
-      uses: actions/checkout@v2
-
+      uses: actions/checkout@v4 # Actualizado para Node 24
 
     - name: Set up .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v4 # Actualizado para Node 24
       with:
-        dotnet-version: '9.0'
-
+        dotnet-version: '9.0.x'
 
     - name: Restore dependencies
       run: dotnet restore
 
-
     - name: Build application
-      run: dotnet build --configuration Release
-
+      run: dotnet build --configuration Release --no-restore
 
     - name: Publish application
-      run: dotnet publish --configuration Release --output ./published
+      # Se especifica el proyecto exacto (.csproj) en lugar de la solución (.sln) para permitir el parámetro --output
+      run: dotnet publish Lab08-ValeriaZumaran/Lab08-ValeriaZumaran.csproj --configuration Release --output ./published --no-build
 
-
-    - name: Deploy to server (ejemplo de despliegue)
+    - name: Deploy to server
       run: |
         scp -r ./published username@server:/path/to/deploy
 
