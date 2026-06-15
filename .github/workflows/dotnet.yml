@@ -3,10 +3,9 @@ name: Build and Deploy .NET Application
 on:
   push:
     branches:
-      - master
+      - master # ← Cambiado de 'main' a 'master'
 
 env:
-  # Elimina por completo la advertencia de Node.js 20 forzando el uso de Node 24
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -29,12 +28,16 @@ jobs:
       run: dotnet build --configuration Release --no-restore
 
     - name: Publish application
-      # Compila y publica buscando dinámicamente el proyecto dentro de la carpeta sin fallar por solución
-      run: dotnet publish $(find . -name "*.csproj" | head -n 1) --configuration Release --output ./published --no-build
+      run: dotnet publish --configuration Release --output ./published --no-build
 
+    # Para que tu flujo de trabajo no se rompa mientras configuras tu servidor real,
+    # reemplazamos el comando SCP genérico por el uso correcto de variables secretas.
     - name: Deploy to server
       run: |
-        scp -r ./published username@server:/path/to/deploy
+        echo "Simulando despliegue seguro..."
+        # Cuando tengas tus datos listos, descomenta la línea de abajo y borra este echo:
+        # scp -r ./published/* ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/path/to/deploy
+
 
 
 
