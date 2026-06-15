@@ -5,16 +5,20 @@ on:
     branches:
       - master
 
+env:
+  # Elimina por completo la advertencia de Node.js 20 forzando el uso de Node 24
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     
     steps:
     - name: Check out code
-      uses: actions/checkout@v4 # Actualizado para Node 24
+      uses: actions/checkout@v4
 
     - name: Set up .NET
-      uses: actions/setup-dotnet@v4 # Actualizado para Node 24
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '9.0.x'
 
@@ -25,12 +29,13 @@ jobs:
       run: dotnet build --configuration Release --no-restore
 
     - name: Publish application
-      # Se especifica el proyecto exacto (.csproj) en lugar de la solución (.sln) para permitir el parámetro --output
-      run: dotnet publish Lab08-ValeriaZumaran/Lab08-ValeriaZumaran.csproj --configuration Release --output ./published --no-build
+      # Compila y publica buscando dinámicamente el proyecto dentro de la carpeta sin fallar por solución
+      run: dotnet publish $(find . -name "*.csproj" | head -n 1) --configuration Release --output ./published --no-build
 
     - name: Deploy to server
       run: |
         scp -r ./published username@server:/path/to/deploy
+
 
 
 
