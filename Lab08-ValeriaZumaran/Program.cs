@@ -26,26 +26,26 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// CONFIGURACIÓN DE BASE DE DATOS CORREGIDA PARA POSTGRES EN RENDER
 builder.Services.AddDbContext<Lab8DbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+        .UseSnakeCaseNamingConvention()); // <-- Traduce automáticamente de Mayúsculas a las minúsculas de Render
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.MapOpenApi();
 
 app.UseHttpsRedirection();
 
-if (app.Environment.IsDevelopment())
+// HABILITAR SWAGGER TANTO EN LOCAL COMO EN EL DESPLIEGUE DE RENDER
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(); 
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Lab08 API v1");
+    c.RoutePrefix = string.Empty; // Hace que Swagger sea la página de inicio principal en Render
+});
 
-app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
