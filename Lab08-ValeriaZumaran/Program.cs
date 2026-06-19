@@ -26,24 +26,32 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// CONFIGURACIÓN DE BASE DE DATOS CORREGIDA PARA POSTGRES EN RENDER
+// FORZAR SELECCIÓN DE BASE DE DATOS (RENDER vs LOCAL)
+// 1. Intenta leer primero la clave directa del entorno de Render.
+var connectionString = Environment.GetEnvironmentVariable("DefaultConnection");
+
+// 2. Si está vacío (porque estás en tu PC), usa el appsettings.json local con localhost.
+if (string.IsNullOrEmpty(connectionString))
+{
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+}
+
+// 3. Inyectamos la cadena definitiva a PostgreSQL con soporte para minúsculas
 builder.Services.AddDbContext<Lab8DbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
-        .UseSnakeCaseNamingConvention()); // <-- Traduce automáticamente de Mayúsculas a las minúsculas de Render
+    options.UseNpgsql(connectionString)
+           .UseSnakeCaseNamingConvention());
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-app.MapOpenApi();
-
 app.UseHttpsRedirection();
 
-// HABILITAR SWAGGER TANTO EN LOCAL COMO EN EL DESPLIEGUE DE RENDER
+// HABILITAR SWAGGER Y OPENAPI EN PRODUCCIÓN (FUERA DE CONDICIONALES)
+app.MapOpenApi();
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Lab08 API v1");
-    c.RoutePrefix = string.Empty; // Hace que Swagger sea la página de inicio principal en Render
+    c.RoutePrefix = string.Empty; // Swagger será la pantalla principal en Render
 });
 
 app.UseAuthorization();
