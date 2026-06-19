@@ -27,20 +27,19 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // FORZAR SELECCIÓN DE BASE DE DATOS (RENDER vs LOCAL)
-// 1. Buscamos primero si Render nos inyectó la variable ConnectionStrings__DefaultConnection
-var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+// 1. Buscamos de forma directa nuestra variable personalizada sin prefijos extraños de .NET
+var connectionString = Environment.GetEnvironmentVariable("CADENA_PROD");
 
-// 2. Si no existe en el sistema (porque estás en local), lee tu appsettings.json con localhost
+// 2. Si no existe (estás en local en tu computadora), lee el appsettings.json tradicional
 if (string.IsNullOrEmpty(connectionString))
 {
     connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 }
 
-// 3. Pasamos la conexión final ganadora a PostgreSQL con la convención de minúsculas
+// 3. Pasamos la conexión final ganadora a PostgreSQL con el soporte para minúsculas
 builder.Services.AddDbContext<Lab8DbContext>(options =>
     options.UseNpgsql(connectionString)
         .UseSnakeCaseNamingConvention());
-
 
 var app = builder.Build();
 
