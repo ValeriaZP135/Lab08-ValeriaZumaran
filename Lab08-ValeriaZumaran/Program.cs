@@ -27,19 +27,20 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // FORZAR SELECCIÓN DE BASE DE DATOS (RENDER vs LOCAL)
-// 1. Intenta leer primero la clave directa del entorno de Render.
-var connectionString = Environment.GetEnvironmentVariable("DefaultConnection");
+// 1. Buscamos primero si Render nos inyectó la variable ConnectionStrings__DefaultConnection
+var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
 
-// 2. Si está vacío (porque estás en tu PC), usa el appsettings.json local con localhost.
+// 2. Si no existe en el sistema (porque estás en local), lee tu appsettings.json con localhost
 if (string.IsNullOrEmpty(connectionString))
 {
     connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 }
 
-// 3. Inyectamos la cadena definitiva a PostgreSQL con soporte para minúsculas
+// 3. Pasamos la conexión final ganadora a PostgreSQL con la convención de minúsculas
 builder.Services.AddDbContext<Lab8DbContext>(options =>
     options.UseNpgsql(connectionString)
-           .UseSnakeCaseNamingConvention());
+        .UseSnakeCaseNamingConvention());
+
 
 var app = builder.Build();
 
